@@ -1,15 +1,30 @@
 import React from 'react';
-import { FaUser, FaEnvelope, FaPhone } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaPhone, FaGlobe } from 'react-icons/fa';
 
 const ForgotPasswordForm = ({ type, onSubmit, onBack }) => {
   const [email, setEmail] = React.useState('');
   const [phoneNumber, setPhoneNumber] = React.useState('');
+  const [countryCode, setCountryCode] = React.useState('+91'); // Default to India
   const [resetMethod, setResetMethod] = React.useState('email'); // 'email' or 'phone'
+
+  // Common country codes
+  const countryCodes = [
+    { code: '+91', country: 'India' },
+    { code: '+1', country: 'USA/Canada' },
+    { code: '+44', country: 'UK' },
+    { code: '+81', country: 'Japan' },
+    { code: '+86', country: 'China' },
+    { code: '+49', country: 'Germany' },
+    { code: '+33', country: 'France' },
+    { code: '+61', country: 'Australia' },
+    { code: '+971', country: 'UAE' },
+    { code: '+65', country: 'Singapore' },
+  ];
 
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit({ 
-      identifier: resetMethod === 'email' ? email : phoneNumber,
+      identifier: resetMethod === 'email' ? email : `${countryCode}${phoneNumber}`,
       type,
       resetMethod 
     });
@@ -72,24 +87,52 @@ const ForgotPasswordForm = ({ type, onSubmit, onBack }) => {
           </div>
         )}
 
-        {/* Phone Number Input */}
+        {/* Phone Number Input with Country Code */}
         {resetMethod === 'phone' && (
           <div>
             <label className="block text-gray-700 font-medium mb-2">
               Phone Number
             </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                <FaPhone />
-              </span>
-              <input
-                type="tel"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                placeholder="Enter your phone number"
-                required
-              />
+            <div className="flex space-x-2">
+              {/* Country Code Selector */}
+              <div className="relative w-32">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  <FaGlobe />
+                </span>
+                <select
+                  value={countryCode}
+                  onChange={(e) => setCountryCode(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none bg-white"
+                >
+                  {countryCodes.map(({ code, country }) => (
+                    <option key={code} value={code}>
+                      {code} {country}
+                    </option>
+                  ))}
+                </select>
+                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
+                  ▼
+                </span>
+              </div>
+              
+              {/* Phone Number Input */}
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  <FaPhone />
+                </span>
+                <input
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => {
+                    // Only allow numbers
+                    const value = e.target.value.replace(/[^\d]/g, '');
+                    setPhoneNumber(value);
+                  }}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  placeholder="Enter your phone number"
+                  required
+                />
+              </div>
             </div>
           </div>
         )}

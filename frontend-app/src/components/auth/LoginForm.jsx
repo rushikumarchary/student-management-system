@@ -1,13 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 
-const FacultyLoginForm = ({ onSubmit, onForgotPassword }) => {
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+const LoginForm = ({ onSubmit, onForgotPassword, userType = 'student' }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit({ email, password });
+    setLoading(true);
+    try {
+      await onSubmit({ email, password });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -25,6 +31,7 @@ const FacultyLoginForm = ({ onSubmit, onForgotPassword }) => {
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             placeholder="Enter your email"
             required
+            disabled={loading}
           />
         </div>
       </div>
@@ -41,6 +48,7 @@ const FacultyLoginForm = ({ onSubmit, onForgotPassword }) => {
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             placeholder="Enter your password"
             required
+            disabled={loading}
           />
         </div>
       </div>
@@ -49,18 +57,20 @@ const FacultyLoginForm = ({ onSubmit, onForgotPassword }) => {
           type="button"
           onClick={onForgotPassword}
           className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+          disabled={loading}
         >
           Forgot Password?
         </button>
       </div>
       <button
         type="submit"
-        className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200"
+        className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={loading}
       >
-        Login as Faculty
+        {loading ? 'Signing in...' : `Login as ${userType.charAt(0).toUpperCase() + userType.slice(1)}`}
       </button>
     </form>
   );
 };
 
-export default FacultyLoginForm; 
+export default LoginForm; 

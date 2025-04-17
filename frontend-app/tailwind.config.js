@@ -2,10 +2,15 @@
 export default {
   content: [
     "./index.html",
-    "./src/**/*.{js,jsx,ts,tsx}",
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
+      fontFamily: {
+        default: ["Roboto", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "Noto Sans", "Liberation Sans", "sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"],
+        heading: ["Jost", "sans-serif"],
+        nav: ["Jost", "sans-serif"],
+      },
       colors: {
         primary: {
           50: '#f0f9ff',
@@ -18,7 +23,7 @@ export default {
           700: '#0369a1',
           800: '#075985',
           900: '#0c4a6e',
-          950: '#082f49',
+          950: '#0f394c',
         },
         secondary: {
           50: '#f8fafc',

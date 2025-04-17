@@ -14,7 +14,6 @@ import Facilities from "./pages/Facilities";
 import Contact from "./pages/Contact";
 import Login from "./pages/auth/Login";
 import Alumni from "./pages/Alumni";
-import Institutions from "./pages/Institutions";
 import Faculty from "./pages/Faculty";
 import Events from "./pages/Events";
 import Results from "./pages/Results";
@@ -42,7 +41,7 @@ function App() {
             <Route path="/facilities" element={<Facilities />} />
             <Route path="/alumni" element={<Alumni />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/institutions" element={<Institutions />} />
+            
             <Route path="/faculty" element={<Faculty />} />
             <Route path="/events" element={<Events />} />
             <Route path="/results" element={<Results />} />

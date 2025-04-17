@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
     try {
       let response;
       if (type === 'student') {
-        response = await authService.studentLogin(credentials.prn, credentials.password);
+        response = await authService.studentLogin(credentials.email, credentials.password);
       } else {
         response = await authService.facultyLogin(credentials.email, credentials.password);
       }
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.forgotPassword(type, identifier);
       return response;
     } catch (error) {
-      const errorMessage = error.message || 'Error processing password reset';
+      const errorMessage = error.message || 'An error occurred during password reset';
       setError(errorMessage);
       throw error;
     } finally {

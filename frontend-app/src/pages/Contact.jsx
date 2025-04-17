@@ -1,22 +1,23 @@
 import React from 'react';
 import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock, FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
+import { collegeInfo } from '../config/collegeInfo';
 
 const Contact = () => {
   const contactInfo = [
     {
       icon: FaMapMarkerAlt,
       title: "Address",
-      content: "123 Education Street, Knowledge City, State - 500001"
+      content: collegeInfo.contact.address
     },
     {
       icon: FaPhone,
       title: "Phone",
-      content: "+91 1234567890"
+      content: collegeInfo.contact.phone
     },
     {
       icon: FaEnvelope,
       title: "Email",
-      content: "info@edusystem.gov.in"
+      content: collegeInfo.contact.email
     },
     {
       icon: FaClock,
@@ -26,10 +27,10 @@ const Contact = () => {
   ];
 
   const socialLinks = [
-    { icon: FaFacebook, link: "#", label: "Facebook" },
-    { icon: FaTwitter, link: "#", label: "Twitter" },
-    { icon: FaInstagram, link: "#", label: "Instagram" },
-    { icon: FaLinkedin, link: "#", label: "LinkedIn" }
+    { icon: FaFacebook, link: collegeInfo.socialMedia.facebook, label: "Facebook" },
+    { icon: FaTwitter, link: collegeInfo.socialMedia.twitter, label: "Twitter" },
+    { icon: FaInstagram, link: collegeInfo.socialMedia.instagram, label: "Instagram" },
+    { icon: FaLinkedin, link: collegeInfo.socialMedia.linkedin, label: "LinkedIn" }
   ];
 
   return (
@@ -117,7 +118,7 @@ const Contact = () => {
               <h2 className="text-2xl font-bold text-primary-800 mb-6">Our Location</h2>
               <div className="aspect-w-16 aspect-h-9">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3806.0252637644857!2d78.4862!3d17.3850!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTfCsDIzJzA2LjAiTiA3OMKwMjknMTAuMiJF!5e0!3m2!1sen!2sin!4v1635835657123!5m2!1sen!2sin"
+                  src={collegeInfo.contact.mapUrl}
                   width="100%"
                   height="450"
                   style={{ border: 0 }}

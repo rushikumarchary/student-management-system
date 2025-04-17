@@ -1,29 +1,29 @@
 import React from 'react';
-import { FaUser, FaLock } from 'react-icons/fa';
+import { FaEnvelope, FaLock } from 'react-icons/fa';
 
 const StudentLoginForm = ({ onSubmit, onForgotPassword }) => {
-  const [prn, setPrn] = React.useState('');
+  const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ prn, password });
+    onSubmit({ email, password });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label className="block text-gray-700 font-medium mb-2">PRN Number</label>
+        <label className="block text-gray-700 font-medium mb-2">Email</label>
         <div className="relative">
           <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-            <FaUser />
+            <FaEnvelope />
           </span>
           <input
-            type="text"
-            value={prn}
-            onChange={(e) => setPrn(e.target.value)}
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-            placeholder="Enter your PRN number"
+            placeholder="Enter your email"
             required
           />
         </div>

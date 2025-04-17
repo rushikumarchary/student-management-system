@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { FaBars, FaTimes, FaSearch, FaUser, FaBell, FaFont, FaFacebookF, FaTwitter, FaYoutube } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
-import logo from '../../assets/logo.jpg';
+import logo from '../../assets/logo.png';
+import { collegeInfo } from '../../config/collegeInfo';
+import constitution75 from '../../assets/constitution75.png';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -32,6 +34,19 @@ const Header = () => {
     logout();
   };
 
+  const navItems = [
+    { path: '/', label: 'Home' },
+    { path: '/about', label: 'About Us' },
+    { path: '/academics', label: 'Academics' },
+    { path: '/admissions', label: 'Admissions' },
+    { path: '/facilities', label: 'Facilities' },
+    { path: '/alumni', label: 'Alumni' },
+    { path: '/faculty', label: 'Faculty' },
+    { path: '/events', label: 'Events' },
+    
+    { path: '/contact', label: 'Contact Us' }
+  ];
+
   return (
     <header>
       {/* Accessibility Bar */}
@@ -52,13 +67,13 @@ const Header = () => {
                 A-
               </button>
               <div className="w-px h-5 bg-primary-700 mx-2"></div>
-              <a href="#" className="w-7 h-7 flex items-center justify-center rounded-full bg-primary-700 hover:bg-[#3b5998] text-white transition-colors">
+              <a href={collegeInfo.socialMedia.facebook} className="w-7 h-7 flex items-center justify-center rounded-full bg-primary-700 hover:bg-[#3b5998] text-white transition-colors">
                 <FaFacebookF className="text-sm" />
               </a>
-              <a href="#" className="w-7 h-7 flex items-center justify-center rounded-full bg-primary-700 hover:bg-[#1DA1F2] text-white transition-colors">
+              <a href={collegeInfo.socialMedia.twitter} className="w-7 h-7 flex items-center justify-center rounded-full bg-primary-700 hover:bg-[#1DA1F2] text-white transition-colors">
                 <FaTwitter className="text-sm" />
               </a>
-              <a href="#" className="w-7 h-7 flex items-center justify-center rounded-full bg-primary-700 hover:bg-[#FF0000] text-white transition-colors">
+              <a href={collegeInfo.socialMedia.instagram} className="w-7 h-7 flex items-center justify-center rounded-full bg-primary-700 hover:bg-[#FF0000] text-white transition-colors">
                 <FaYoutube className="text-sm" />
               </a>
               <div className="flex items-center space-x-4">
@@ -90,23 +105,6 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Top Bar
-      <div className="bg-primary-800 text-white py-2">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <a href="mailto:info@EduSystem.gov.in" className="text-sm hover:text-primary-200">
-                info@EduSystem.gov.in
-              </a>
-              <a href="tel:+911234567890" className="text-sm hover:text-primary-200">
-                +91 1234567890
-              </a>
-            </div>
-            
-          </div>
-        </div>
-      </div> */}
-
       {/* Main Header */}
       <div className="bg-white shadow-md">
         <div className="container mx-auto px-4 py-4">
@@ -120,13 +118,17 @@ const Header = () => {
                   className="h-16 w-auto mr-4"
                 />
                 <div>
-                  <h1 className="text-2xl font-bold text-primary-800">EduSystem</h1>
-                  <p className="text-sm text-secondary-600">Education Management System</p>
+                  <h1 className="text-3xl font-bold text-primary-950">{collegeInfo.name}</h1>
+                  <h4 className=" font-semibold text-primary-950">A Legacy of Education and Achievement</h4>
                 </div>
               </Link>
             </div>
 
-            {/* Search Bar */}
+            <div className='hidden md:flex items-center'>
+              <img src={constitution75} alt="Constitution 75" className="h-16 w-auto" />
+            </div>
+
+            {/* Search Bar
             <div className="hidden md:flex items-center">
               <div className="relative">
                 <input 
@@ -138,15 +140,15 @@ const Header = () => {
                   <FaSearch />
                 </button>
               </div>
-            </div>
+            </div> */}
 
             {/* User Actions */}
             {isAuthenticated && (
               <div className="hidden md:flex items-center space-x-4">
-                <button className="p-2 text-secondary-600 hover:text-primary-600">
+                <button className="p-2 text-primary-950 hover:text-primary-600">
                   <FaBell className="text-xl" />
                 </button>
-                <button className="p-2 text-secondary-600 hover:text-primary-600">
+                <button className="p-2 text-primary-950 hover:text-primary-600">
                   <FaUser className="text-xl" />
                 </button>
               </div>
@@ -164,94 +166,27 @@ const Header = () => {
           {/* Navigation */}
           <nav className={`${isMenuOpen ? 'block' : 'hidden'} md:block mt-4`}>
             <ul className="flex flex-col md:flex-row md:items-center md:space-x-6">
-              <li>
-                <Link to="/" className="block py-2 text-primary-800 hover:text-primary-600 font-medium relative group">
-                  <span className="font-bold relative">
-                    Home
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all duration-300"></span>
-                  </span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/about" className="block py-2 text-primary-800 hover:text-primary-600 font-medium relative group">
-                  <span className="font-bold relative">
-                    About Us
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all duration-300"></span>
-                  </span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/academics" className="block py-2 text-primary-800 hover:text-primary-600 font-medium relative group">
-                  <span className="font-bold relative">
-                    Academics
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all duration-300"></span>
-                  </span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/admissions" className="block py-2 text-primary-800 hover:text-primary-600 font-medium relative group">
-                  <span className="font-bold relative">
-                    Admissions
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all duration-300"></span>
-                  </span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/facilities" className="block py-2 text-primary-800 hover:text-primary-600 font-medium relative group">
-                  <span className="font-bold relative">
-                    Facilities
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all duration-300"></span>
-                  </span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/alumni" className="block py-2 text-primary-800 hover:text-primary-600 font-medium relative group">
-                  <span className="font-bold relative">
-                    Alumni
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all duration-300"></span>
-                  </span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/institutions" className="block py-2 text-primary-800 hover:text-primary-600 font-medium relative group">
-                  <span className="font-bold relative">
-                    Institutions
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all duration-300"></span>
-                  </span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="block py-2 text-primary-800 hover:text-primary-600 font-medium relative group">
-                  <span className="font-bold relative">
-                    Contact
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all duration-300"></span>
-                  </span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/faculty" className="block py-2 text-primary-800 hover:text-primary-600 font-medium relative group">
-                  <span className="font-bold relative">
-                    Faculty
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all duration-300"></span>
-                  </span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/events" className="block py-2 text-primary-800 hover:text-primary-600 font-medium relative group">
-                  <span className="font-bold relative">
-                    Events
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all duration-300"></span>
-                  </span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/results" className="block py-2 text-primary-800 hover:text-primary-600 font-medium relative group">
-                  <span className="font-bold relative">
-                    Result
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all duration-300"></span>
-                  </span>
-                </Link>
-              </li>
+              {navItems.map((item) => (
+                <li key={item.path}>
+                  <NavLink
+                    to={item.path}
+                    className={({ isActive }) => `
+                      block py-2 font-medium relative group
+                      ${isActive ? 'text-primary-600' : 'text-primary-800 hover:text-primary-600'}
+                    `}
+                  >
+                    {({ isActive }) => (
+                      <span className="font-bold relative">
+                        {item.label}
+                        <span className={`
+                          absolute bottom-0 left-0 h-0.5 bg-primary-600 transition-all duration-300
+                          ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}
+                        `}></span>
+                      </span>
+                    )}
+                  </NavLink>
+                </li>
+              ))}
             </ul>
           </nav>
         </div>

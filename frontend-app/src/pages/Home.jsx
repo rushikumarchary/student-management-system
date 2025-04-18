@@ -299,7 +299,7 @@ const Home = () => {
           </div>
         </div>
 
-        <style jsx>{`
+        <style>{`
           @keyframes slide {
             0% { transform: translateX(0); }
             100% { transform: translateX(calc(-100% / 2)); }

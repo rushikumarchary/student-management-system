@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-    import logo from '../../assets/logo.jpg';
+import logo from '../../assets/logo.png';
+import { collegeInfo } from '../../config/collegeInfo';
 
 const Footer = () => {
   return (
@@ -17,11 +18,9 @@ const Footer = () => {
                 className="h-16 w-auto mb-4"
               />
               <address className="not-italic text-sm text-primary-100">
-                Room No.206, 2nd floor,<br />
-                DSS Bhavan, Opp. Chacha<br />
-                Nehru Park, Masab tank,<br />
-                Hyderabad-500028
+                {collegeInfo.contact.address}
               </address>
+              
             </div>
 
             {/* Quick Links */}
@@ -118,7 +117,7 @@ const Footer = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center text-sm">
             <div className="text-primary-100">
-              Copyright 2025 © Bc Welfare. All Rights Reserved By EduSystem.
+              Copyright {new Date().getFullYear()} © {collegeInfo.name}. All Rights Reserved.
             </div>
             <div className="text-primary-100">
               Designed & Developed by <a href="https://www.itrosys.com/" target="_blank" rel="noopener noreferrer">iTroSys Technologies Pvt Ltd</a>

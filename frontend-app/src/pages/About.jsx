@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaGraduationCap, FaBullseye, FaLightbulb, FaChalkboardTeacher, FaUsers, FaMedal } from 'react-icons/fa';
-
+import { collegeInfo } from '../config/collegeInfo';
 const About = () => {
   return (
     <div className="bg-gray-50">
@@ -20,7 +20,7 @@ const About = () => {
           <div className="max-w-3xl mx-auto">
             <h2 className="text-3xl font-bold text-primary-800 mb-6">Our Overview</h2>
             <p className="text-secondary-600 mb-6">
-              EduSystem is a premier educational institution committed to providing high-quality education
+              {collegeInfo.name} is a premier educational institution committed to providing high-quality education
               and fostering academic excellence. With state-of-the-art facilities and dedicated faculty,
               we create an environment that nurtures learning, innovation, and personal growth.
             </p>

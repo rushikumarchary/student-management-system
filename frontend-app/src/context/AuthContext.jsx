@@ -25,6 +25,7 @@ export function AuthProvider({ children }) {
   const [authCallback, setAuthCallback] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
   const [error, setError] = useState(null);
+  const [isVerified, setIsVerified] = useState(false);
 
   // Function to normalize role
   const normalizeRole = (role) => {
@@ -62,6 +63,7 @@ export function AuthProvider({ children }) {
         };
         setUserInfo(userInfo);
         localStorage.setItem('userInfo', JSON.stringify(userInfo));
+        setIsVerified(false);
       } else {
         // Store the response data and normalize the role
         const userData = response.data;
@@ -69,6 +71,7 @@ export function AuthProvider({ children }) {
         userData.role = normalizedRole; // Update the role in userData
         setUserInfo(userData);
         setUserRole(normalizedRole); // Set the normalized role
+        setIsVerified(!!normalizedRole); // Set verification status based on role
         localStorage.setItem('userInfo', JSON.stringify(userData));
         localStorage.setItem('userRole', normalizedRole);
       }
@@ -85,6 +88,7 @@ export function AuthProvider({ children }) {
       };
       setUserInfo(userInfo);
       localStorage.setItem('userInfo', JSON.stringify(userInfo));
+      setIsVerified(false);
       setError(error.response?.data?.message || error.message);
       throw error;
     }
@@ -100,6 +104,9 @@ export function AuthProvider({ children }) {
       if (parsedUserInfo.role) {
         const normalizedRole = normalizeRole(parsedUserInfo.role);
         setUserRole(normalizedRole);
+        setIsVerified(true);
+      } else {
+        setIsVerified(false);
       }
     }
   }, []);
@@ -251,6 +258,7 @@ export function AuthProvider({ children }) {
     userInfo,
     error,
     loading,
+    isVerified,
     signup,
     login,
     logout,

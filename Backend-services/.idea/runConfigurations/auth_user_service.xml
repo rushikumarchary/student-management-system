@@ -1,9 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="auth-user-service" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="com.itrosys.auth_user_service.AuthUserServiceApplication" />
-    <module name="auth_user_service" />
-    <method v="2">
-      <option name="Make" enabled="true" />
-    </method>
-  </configuration>
-</component>

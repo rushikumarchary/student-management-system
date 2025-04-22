@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import axios from 'axios';
-import { auth } from '../../config/firebase';
+import keycloakService from '../../services/keycloakService';
 
 const GoogleLogin = () => {
   const [user, setUser] = useState(null);
@@ -12,22 +10,19 @@ const GoogleLogin = () => {
     setLoading(true);
     setError('');
     try {
-      // Initialize Google Auth Provider
-      const provider = new GoogleAuthProvider();
+      // Login with Google through Keycloak
+      await keycloakService.loginWithGoogle();
       
-      // Sign in with Google
-      const result = await signInWithPopup(auth, provider);
-      
-      // Get the ID token
-      const idToken = await result.user.getIdToken();
-      
-      // Send the ID token to your backend
-      const response = await axios.post('http://localhost:8080/api/auth/login', {
-        idToken: idToken
-      });
-
-      // Set the user info from the response
-      setUser(response.data);
+      // The user info will be available in keycloakService.userInfo after successful login
+      if (keycloakService.userInfo) {
+        const userInfo = {
+          uid: keycloakService.userInfo.sub,
+          name: keycloakService.userInfo.name,
+          email: keycloakService.userInfo.email,
+          photoURL: keycloakService.userInfo.picture
+        };
+        setUser(userInfo);
+      }
       
     } catch (error) {
       console.error('Login error:', error);

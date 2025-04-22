@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { FaArrowLeft, FaLock, FaEye, FaEyeSlash, FaEnvelope, FaPhone, FaGlobe } from 'react-icons/fa';
-import { confirmPasswordReset } from 'firebase/auth';
-import { auth } from '../../config/firebase';
+import { useKeycloak } from '@react-keycloak/web';
 
 const countryCodes = [
   { code: '+1', country: 'US/CA' },
@@ -13,6 +12,7 @@ const countryCodes = [
 ];
 
 const NewPasswordForm = ({ onBack }) => {
+  const { keycloak } = useKeycloak();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -43,15 +43,11 @@ const NewPasswordForm = ({ onBack }) => {
     }
 
     try {
-      // Get the action code from the URL
-      const actionCode = new URLSearchParams(window.location.search).get('oobCode');
-      
-      if (!actionCode) {
-        throw new Error('Invalid or expired password reset link');
-      }
-
-      // Confirm the password reset
-      await confirmPasswordReset(auth, actionCode, password);
+      // Use Keycloak's update password functionality
+      await keycloak.updatePassword({
+        password: password,
+        temporary: false
+      });
       setSuccess(true);
     } catch (error) {
       console.error('Password reset error:', error);
@@ -261,24 +257,14 @@ const NewPasswordForm = ({ onBack }) => {
             </button>
           </div>
         </div>
-        
-        <div className="flex space-x-4">
-          <button
-            type="button"
-            onClick={onBack}
-            className="flex-1 bg-gray-100 hover:bg-gray-200 text-primary-600 font-medium py-2 px-4 rounded-md transition-colors duration-200"
-            disabled={loading}
-          >
-            Back to Login
-          </button>
-          <button
-            type="submit"
-            className="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading || !password || !confirmPassword}
-          >
-            {loading ? 'Resetting Password...' : 'Reset Password'}
-          </button>
-        </div>
+
+        <button
+          type="submit"
+          className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg hover:bg-primary-700 transition-colors duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={loading}
+        >
+          {loading ? 'Updating Password...' : 'Update Password'}
+        </button>
       </form>
     </div>
   );

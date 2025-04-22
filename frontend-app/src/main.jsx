@@ -1,12 +1,24 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './index.css';
+import { initKeycloak } from './services/keycloakService';
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
- 
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
+// Initialize Keycloak
+initKeycloak().then(() => {
+  root.render(
+    <React.StrictMode>
       <App />
-   
-  </StrictMode>,
-)
+    </React.StrictMode>
+  );
+}).catch(error => {
+  console.error('Failed to initialize Keycloak:', error);
+  // Render app anyway to show error state or login page
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+});

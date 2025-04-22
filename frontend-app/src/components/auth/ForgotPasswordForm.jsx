@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { FaArrowLeft, FaEnvelope, FaPhone, FaGlobe } from 'react-icons/fa';
-import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '../../config/firebase';
+import { useAuth } from '../../context/AuthContext';
 import OTPVerificationForm from './OTPVerificationForm';
 import NewPasswordForm from './NewPasswordForm';
 
@@ -15,85 +14,48 @@ const countryCodes = [
 ];
 
 const ForgotPasswordForm = ({ onBack }) => {
+  const { resetPassword } = useAuth();
   const [resetMethod, setResetMethod] = useState('email');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [countryCode, setCountryCode] = useState('+1');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [oobCode, setOobCode] = useState('');
+  const [message, setMessage] = useState('');
   const [showOTPForm, setShowOTPForm] = useState(false);
   const [showNewPasswordForm, setShowNewPasswordForm] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
-    setSuccess(false);
+    setLoading(true);
 
     try {
       if (resetMethod === 'email') {
-        // Configure actionCodeSettings for password reset
-        const actionCodeSettings = {
-          url: window.location.origin + '/login', // URL to redirect to after email is opened
-          handleCodeInApp: true
-        };
-
-        // Send password reset email
-        await sendPasswordResetEmail(auth, email, actionCodeSettings);
-        console.log('Password reset email sent successfully to:', email);
-        setSuccess(true);
-        setShowOTPForm(true);
+        await resetPassword(email);
+        setMessage('Password reset instructions have been sent to your email.');
       } else {
-        // Phone number reset logic
-        const fullPhoneNumber = `${countryCode}${phoneNumber}`;
-        console.log('Sending OTP to:', fullPhoneNumber);
-        
-        // Here you would integrate with your SMS service provider
-        // For demonstration, we'll just show success
-        setSuccess(true);
+        await resetPassword(phoneNumber);
+        setMessage('Password reset instructions have been sent to your phone.');
       }
-    } catch (error) {
-      console.error('Password reset error:', error);
-      
-      // Handle specific Firebase error codes
-      switch (error.code) {
-        case 'auth/invalid-email':
-          setError('Please enter a valid email address.');
-          break;
-        case 'auth/user-not-found':
-          setError('No account found with this email address. Please check your email or create a new account.');
-          break;
-        case 'auth/too-many-requests':
-          setError('Too many attempts. Please try again later.');
-          break;
-        case 'auth/network-request-failed':
-          setError('Network error. Please check your internet connection and try again.');
-          break;
-        case 'auth/missing-android-pkg-name':
-        case 'auth/missing-ios-bundle-id':
-        case 'auth/missing-continue-uri':
-          setError('Configuration error. Please contact support.');
-          break;
-        default:
-          if (error.message) {
-            setError(error.message);
-          } else {
-            setError('Failed to send reset instructions. Please try again.');
-          }
-      }
-    } finally {
-      setLoading(false);
+      setShowOTPForm(true);
+    } catch (err) {
+      setError(`Failed to reset password: ${err.message || 'Please try again.'}`);
     }
+    setLoading(false);
   };
 
-  const handleOTPVerification = (code) => {
-    // In a real implementation, you would verify the OTP here
-    // For now, we'll just proceed to the new password form
-    setShowOTPForm(false);
-    setShowNewPasswordForm(true);
-    setOobCode(code);
+  const handleOTPVerification = async (code) => {
+    try {
+      // In a real implementation, you would verify the OTP here
+      // For now, we'll just simulate the verification
+      console.log('Verifying OTP:', code);
+      setShowOTPForm(false);
+      setShowNewPasswordForm(true);
+    } catch (error) {
+      console.error('OTP verification error:', error);
+      setError(error.message || 'Failed to verify OTP. Please try again.');
+    }
   };
 
   const handleBack = () => {
@@ -102,18 +64,17 @@ const ForgotPasswordForm = ({ onBack }) => {
       setShowOTPForm(true);
     } else if (showOTPForm) {
       setShowOTPForm(false);
-      setSuccess(false);
     } else {
       onBack();
     }
   };
 
   if (showNewPasswordForm) {
-    return <NewPasswordForm oobCode={oobCode} onBack={handleBack} />;
+    return <NewPasswordForm onBack={handleBack} email={email} />;
   }
 
   if (showOTPForm) {
-    return <OTPVerificationForm onVerify={handleOTPVerification} onBack={handleBack} />;
+    return <OTPVerificationForm onVerify={handleOTPVerification} onBack={handleBack} email={email} />;
   }
 
   return (
@@ -143,14 +104,9 @@ const ForgotPasswordForm = ({ onBack }) => {
           </div>
         )}
 
-        {success && (
+        {message && (
           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative mb-4" role="alert">
-            <strong className="font-bold">Success! </strong>
-            <span className="block sm:inline">
-              {resetMethod === 'email'
-                ? `Password reset link has been sent to ${email}. Please check your email inbox and spam folder.`
-                : `OTP has been sent to ${countryCode}${phoneNumber}.`}
-            </span>
+            <span className="block sm:inline">{message}</span>
           </div>
         )}
 
@@ -162,7 +118,6 @@ const ForgotPasswordForm = ({ onBack }) => {
               onClick={() => {
                 setResetMethod('email');
                 setError('');
-                setSuccess(false);
               }}
               className={`flex-1 py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 ${
                 resetMethod === 'email'
@@ -178,7 +133,6 @@ const ForgotPasswordForm = ({ onBack }) => {
               onClick={() => {
                 setResetMethod('phone');
                 setError('');
-                setSuccess(false);
               }}
               className={`flex-1 py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 ${
                 resetMethod === 'phone'
@@ -206,7 +160,6 @@ const ForgotPasswordForm = ({ onBack }) => {
                   onChange={(e) => {
                     setEmail(e.target.value);
                     setError('');
-                    setSuccess(false);
                   }}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="Enter your email address"
@@ -230,7 +183,6 @@ const ForgotPasswordForm = ({ onBack }) => {
                     onChange={(e) => {
                       setCountryCode(e.target.value);
                       setError('');
-                      setSuccess(false);
                     }}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none bg-white"
                     disabled={loading}
@@ -253,10 +205,8 @@ const ForgotPasswordForm = ({ onBack }) => {
                     type="tel"
                     value={phoneNumber}
                     onChange={(e) => {
-                      const value = e.target.value.replace(/[^\d]/g, '');
-                      setPhoneNumber(value);
+                      setPhoneNumber(e.target.value);
                       setError('');
-                      setSuccess(false);
                     }}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     placeholder="Enter your phone number"
@@ -270,10 +220,10 @@ const ForgotPasswordForm = ({ onBack }) => {
 
           <button
             type="submit"
-            className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg hover:bg-primary-700 transition-colors duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading || (!email && !phoneNumber)}
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading}
           >
-            {loading ? 'Sending...' : 'Send Reset OTP'}
+            {loading ? 'Sending...' : 'Send Reset Instructions'}
           </button>
         </form>
       </div>

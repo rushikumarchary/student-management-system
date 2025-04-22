@@ -1,276 +1,337 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { 
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  GoogleAuthProvider,
-  signInWithPopup,
-  setPersistence,
-  browserLocalPersistence
-} from 'firebase/auth';
-import { auth } from '../config/firebase';
-import axios from 'axios';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import keycloakService, { directLogin, initKeycloak } from '../services/keycloakService';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
-export function useAuth() {
-  return useContext(AuthContext);
-}
-
-export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [userRole, setUserRole] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [authCallback, setAuthCallback] = useState(null);
-  const [userInfo, setUserInfo] = useState(null);
-  const [error, setError] = useState(null);
-  const [isVerified, setIsVerified] = useState(false);
-
-  // Function to normalize role
-  const normalizeRole = (role) => {
-    if (!role) return null;
-    return role.toLowerCase();
-  };
-
-  // Function to authenticate with backend
-  const authenticateWithBackend = async (user) => {
-    try {
-      // Get the ID token
-      const idToken = await user.getIdToken();
-      console.log("idToken found", idToken);
-      
-      // Send token to backend using Axios
-      const response = await axios.post('http://localhost:8080/api/auth/login', 
-        { idToken },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      
-      console.log("response", response);
-      
-      // Even if we get a 200 status, ensure we have some data
-      if (!response.data || Object.keys(response.data).length === 0) {
-        // If no data, at least store the Firebase user info
-        const userInfo = {
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-        };
-        setUserInfo(userInfo);
-        localStorage.setItem('userInfo', JSON.stringify(userInfo));
-        setIsVerified(false);
-      } else {
-        // Store the response data and normalize the role
-        const userData = response.data;
-        const normalizedRole = normalizeRole(userData.role);
-        userData.role = normalizedRole; // Update the role in userData
-        setUserInfo(userData);
-        setUserRole(normalizedRole); // Set the normalized role
-        setIsVerified(!!normalizedRole); // Set verification status based on role
-        localStorage.setItem('userInfo', JSON.stringify(userData));
-        localStorage.setItem('userRole', normalizedRole);
-      }
-      
-      return response.data;
-    } catch (error) {
-      console.error('Backend authentication error:', error);
-      // Store basic Firebase user info even if backend fails
-      const userInfo = {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-      };
-      setUserInfo(userInfo);
-      localStorage.setItem('userInfo', JSON.stringify(userInfo));
-      setIsVerified(false);
-      setError(error.response?.data?.message || error.message);
-      throw error;
-    }
-  };
+export const AuthProvider = ({ children }) => {
+  const navigate = useNavigate();
+  const [authState, setAuthState] = useState({
+    isAuthenticated: false,
+    currentUser: null,
+    roles: [],
+    userRole: null,
+    isLoading: true, // Start with loading true
+    error: null
+  });
 
   // Initialize auth state from localStorage
   useEffect(() => {
-    const storedUserInfo = localStorage.getItem('userInfo');
-    if (storedUserInfo) {
-      const parsedUserInfo = JSON.parse(storedUserInfo);
-      setUserInfo(parsedUserInfo);
-      // Set normalized role from stored user info
-      if (parsedUserInfo.role) {
-        const normalizedRole = normalizeRole(parsedUserInfo.role);
-        setUserRole(normalizedRole);
-        setIsVerified(true);
-      } else {
-        setIsVerified(false);
-      }
-    }
-  }, []);
-
-  // Determine user role based on email domain or custom claims
-  const determineUserRole = async (user) => {
-    if (!user) return null;
-    
-    try {
-      // Get the ID token result which includes custom claims
-      const idTokenResult = await user.getIdTokenResult();
-      
-      // Check for custom claims first (set by your backend)
-      if (idTokenResult.claims.role) {
-        const role = idTokenResult.claims.role;
-        // Store role in localStorage
-        localStorage.setItem('userRole', role);
-        return role;
-      }
-      
-      // Fallback to email domain check
-      if (user.email.endsWith('@faculty.edu')) {
-        localStorage.setItem('userRole', 'faculty');
-        return 'faculty';
-      }
-      if (user.email.endsWith('@student.edu')) {
-        localStorage.setItem('userRole', 'student');
-        return 'student';
-      }
-      
-      return null;
-    } catch (error) {
-      console.error('Error determining user role:', error);
-      return null;
-    }
-  };
-
-  function signup(email, password) {
-    return createUserWithEmailAndPassword(auth, email, password);
-  }
-
-  function login(email, password) {
-    return signInWithEmailAndPassword(auth, email, password);
-  }
-
-  function logout() {
-    setUserRole(null);
-    setUserInfo(null);
-    // Clear localStorage
-    localStorage.removeItem('userInfo');
-    localStorage.removeItem('userRole');
-    return signOut(auth);
-  }
-
-  async function loginWithGoogle(callback) {
-    try {
-      // Store the callback to be executed after successful authentication
-      if (callback) {
-        setAuthCallback(() => callback);
-      }
-      
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      
-      // Authenticate with backend
-      await authenticateWithBackend(result.user);
-      
-      // Execute the callback if it exists
-      if (authCallback) {
-        authCallback(result.user);
-        setAuthCallback(null); // Clear the callback after execution
-      }
-      
-      return result;
-    } catch (error) {
-      console.error('Google sign-in error:', error);
-      setError(error.message);
-      throw error;
-    }
-  }
-
-  // Set up session persistence
-  useEffect(() => {
-    setPersistence(auth, browserLocalPersistence)
-      .catch(error => {
-        console.error("Error setting persistence:", error);
-      });
-  }, []);
-
-  // Set up auth state listener and token refresh
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const initializeAuth = async () => {
       try {
-        if (user) {
-          setCurrentUser(user);
-          
-          // Try to get stored role first
-          const storedRole = localStorage.getItem('userRole');
-          if (storedRole) {
-            setUserRole(storedRole);
-          } else {
-            // Determine and set role if not in storage
-            const role = await determineUserRole(user);
-            setUserRole(role);
-          }
-          
-          // Try to get stored user info first
-          const storedUserInfo = localStorage.getItem('userInfo');
-          if (storedUserInfo) {
-            setUserInfo(JSON.parse(storedUserInfo));
-          } else {
-            // Authenticate with backend if no stored info
-            await authenticateWithBackend(user);
-          }
-          
-          // Set up token refresh interval
-          const refreshToken = setInterval(async () => {
-            try {
-              await user.getIdToken(true);
-            } catch (error) {
-              console.error("Error refreshing token:", error);
+        // Initialize Keycloak and check authentication
+        const isAuthenticated = await initKeycloak();
+        
+        if (isAuthenticated) {
+          // Get user info from localStorage
+          const userStateStr = localStorage.getItem('userState');
+          if (userStateStr) {
+            const userState = JSON.parse(userStateStr);
+            // Get allowed roles from environment variable
+            const allowedRoles = import.meta.env.VITE_APP_ROLES.split(',').map(role => role.trim());
+            
+            // Filter roles to only include allowed roles
+            const roles = (userState.userInfo?.roles || [])
+              .filter(role => allowedRoles.includes(role));
+            
+            // Get the primary role (first role from filtered list)
+            const userRole = roles.length > 0 ? roles[0] : null;
+
+            setAuthState({
+              isAuthenticated: true,
+              currentUser: {
+                ...userState.userInfo,
+                roles: roles // Override the roles with filtered roles
+              },
+              roles: roles,
+              userRole: userRole,
+              isLoading: false,
+              error: null
+            });
+
+            // Only redirect if on login page
+            if (window.location.pathname === '/login' && userRole) {
+              switch(userRole.toLowerCase()) {
+                case 'student':
+                  navigate('/student-dashboard', { replace: true });
+                  break;
+                case 'faculty':
+                  navigate('/faculty-dashboard', { replace: true });
+                  break;
+                case 'admin':
+                  navigate('/admin-dashboard', { replace: true });
+                  break;
+                default:
+                  navigate('/', { replace: true });
+              }
             }
-          }, 10 * 60 * 1000); // Refresh every 10 minutes
-          
-          // Clean up interval on unmount or user change
-          return () => clearInterval(refreshToken);
+          }
         } else {
-          setCurrentUser(null);
-          setUserRole(null);
-          setUserInfo(null);
-          // Clear localStorage
-          localStorage.removeItem('userInfo');
-          localStorage.removeItem('userRole');
+          // Just update state for not authenticated, don't redirect
+          setAuthState(prev => ({
+            ...prev,
+            isLoading: false,
+            isAuthenticated: false,
+            currentUser: null,
+            roles: [],
+            userRole: null
+          }));
         }
       } catch (error) {
-        console.error('Error in auth state change:', error);
-        setError(error.message);
-      } finally {
-        setLoading(false);
+        console.error('[AUTH] Initialization error:', error);
+        // Just update error state, don't redirect
+        setAuthState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: error,
+          isAuthenticated: false,
+          currentUser: null,
+          roles: [],
+          userRole: null
+        }));
       }
-    });
+    };
 
-    return unsubscribe;
-  }, []);
+    initializeAuth();
 
-  const value = {
-    currentUser,
-    userRole,
-    userInfo,
-    error,
-    loading,
-    isVerified,
-    signup,
-    login,
-    logout,
-    loginWithGoogle,
-    isAuthenticated: !!currentUser,
-    isStudent: userRole === 'student',
-    isFaculty: userRole === 'faculty'
+    // Listen for auth state changes from Keycloak
+    const handleAuthChange = () => {
+      const userStateStr = localStorage.getItem('userState');
+      if (userStateStr) {
+        const userState = JSON.parse(userStateStr);
+        // Get allowed roles from environment variable
+        const allowedRoles = import.meta.env.VITE_APP_ROLES.split(',').map(role => role.trim());
+        
+        // Filter roles to only include allowed roles
+        const roles = (userState.userInfo?.roles || [])
+          .filter(role => allowedRoles.includes(role));
+        
+        // Get the primary role (first role from filtered list)
+        const userRole = roles.length > 0 ? roles[0] : null;
+
+        setAuthState({
+          isAuthenticated: true,
+          currentUser: {
+            ...userState.userInfo,
+            roles: roles // Override the roles with filtered roles
+          },
+          roles: roles,
+          userRole: userRole,
+          isLoading: false,
+          error: null
+        });
+
+        // Only redirect if on login page
+        if (window.location.pathname === '/login' && userRole) {
+          switch(userRole.toLowerCase()) {
+            case 'student':
+              navigate('/student-dashboard', { replace: true });
+              break;
+            case 'faculty':
+              navigate('/faculty-dashboard', { replace: true });
+              break;
+            case 'admin':
+              navigate('/admin-dashboard', { replace: true });
+              break;
+            default:
+              navigate('/', { replace: true });
+          }
+        }
+      } else {
+        // Just update state, don't redirect
+        setAuthState({
+          isAuthenticated: false,
+          currentUser: null,
+          roles: [],
+          userRole: null,
+          isLoading: false,
+          error: null
+        });
+      }
+    };
+
+    window.addEventListener('authStateChanged', handleAuthChange);
+    return () => window.removeEventListener('authStateChanged', handleAuthChange);
+  }, [navigate]);
+
+  const login = async (username, password) => {
+    try {
+      setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+      const success = await directLogin(username, password);
+      
+      if (success) {
+        const userStateStr = localStorage.getItem('userState');
+        if (userStateStr) {
+          const userState = JSON.parse(userStateStr);
+          // Get allowed roles from environment variable
+          const allowedRoles = import.meta.env.VITE_APP_ROLES.split(',').map(role => role.trim());
+          
+          // Filter roles to only include allowed roles
+          const roles = (userState.userInfo?.roles || [])
+            .filter(role => allowedRoles.includes(role));
+          
+          // Get the primary role (first role from filtered list)
+          const userRole = roles.length > 0 ? roles[0] : null;
+
+          setAuthState({
+            isAuthenticated: true,
+            currentUser: {
+              ...userState.userInfo,
+              roles: roles // Override the roles with filtered roles
+            },
+            roles: roles,
+            userRole: userRole,
+            isLoading: false,
+            error: null
+          });
+
+          console.log('[AUTH] Login successful', { roles, userRole });
+
+          // Redirect based on role
+          if (userRole) {
+            switch(userRole.toLowerCase()) {
+              case 'student':
+                navigate('/student-dashboard', { replace: true });
+                break;
+              case 'faculty':
+                navigate('/faculty-dashboard', { replace: true });
+                break;
+              case 'admin':
+                navigate('/admin-dashboard', { replace: true });
+                break;
+              default:
+                navigate('/', { replace: true });
+            }
+          } else {
+            navigate('/', { replace: true });
+          }
+        }
+      }
+      return success;
+    } catch (error) {
+      setAuthState(prev => ({
+        ...prev,
+        error,
+        isLoading: false
+      }));
+      throw error;
+    }
   };
 
+  const logout = async () => {
+    try {
+      console.log('[AUTH] Starting logout process');
+      // First update local state
+      setAuthState({
+        isAuthenticated: false,
+        currentUser: null,
+        roles: [],
+        userRole: null,
+        isLoading: false,
+        error: null
+      });
+
+      // Then try to logout from Keycloak
+      await keycloakService.logout();
+    } catch (error) {
+      console.error('[AUTH] Logout error:', error);
+      // Even if Keycloak logout fails, ensure we clear local state
+      setAuthState({
+        isAuthenticated: false,
+        currentUser: null,
+        roles: [],
+        userRole: null,
+        isLoading: false,
+        error: error
+      });
+      // Force redirect to login page
+      window.location.href = '/login';
+    }
+  };
+
+  const resetPassword = async (email) => {
+    try {
+      setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+      
+      // Call Keycloak's executeActionsEmail API to send password reset email
+      const response = await fetch(`${keycloakService.getKeycloakInstance().authServerUrl}/realms/${keycloakService.getKeycloakInstance().realm}/users/execute-actions-email`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${keycloakService.getKeycloakInstance().token}`
+        },
+        body: JSON.stringify({
+          email: email,
+          actions: ['UPDATE_PASSWORD']
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send password reset email');
+      }
+
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+      return true;
+    } catch (error) {
+      setAuthState(prev => ({
+        ...prev,
+        error,
+        isLoading: false
+      }));
+      throw error;
+    }
+  };
+
+  const loginWithGoogle = async () => {
+    try {
+      setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+      
+      // Ensure Keycloak is initialized
+      if (!keycloakService.instance) {
+        await keycloakService.initKeycloak();
+      }
+
+      // Use Keycloak's default login method
+      await keycloakService.instance.login({
+        idpHint: 'google'
+      });
+      
+    } catch (error) {
+      console.error('[AUTH] Google login error:', error);
+      setAuthState(prev => ({
+        ...prev,
+        error: 'Failed to initialize Google login. Please try again later.',
+        isLoading: false
+      }));
+      throw error;
+    }
+  };
+
+  // Loading state
+  if (authState.isLoading) {
+    return <div>Loading...</div>; // Or your loading component
+  }
+
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{
+      ...authState,
+      setAuthState,
+      login,
+      logout,
+      resetPassword,
+      loginWithGoogle
+    }}>
       {children}
     </AuthContext.Provider>
   );
-} 
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+export default AuthContext;

@@ -9,41 +9,34 @@ const Login = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
   const navigate = useNavigate();
-  const { login, loginWithGoogle, currentUser, userRole, isVerified } = useAuth();
+  const { login, loginWithGoogle, currentUser, userRole } = useAuth();
 
   // Redirect if user is already logged in
   useEffect(() => {
-    if (currentUser) {
-      if (!isVerified) {
-        setShowVerificationMessage(true);
-        navigate('/');
-      } else if (userRole === 'student') {
-        navigate('/student-dashboard');
-      } else if (userRole === 'faculty') {
-        navigate('/faculty-dashboard');
-      } else {
-        navigate('/');
+    if (currentUser && userRole) {
+      switch(userRole.toLowerCase()) {
+        case 'student':
+          navigate('/student-dashboard', { replace: true });
+          break;
+        case 'faculty':
+          navigate('/faculty-dashboard', { replace: true });
+          break;
+        case 'admin':
+          navigate('/admin-dashboard', { replace: true });
+          break;
+        default:
+          navigate('/', { replace: true });
       }
     }
-  }, [currentUser, userRole, isVerified, navigate]);
+  }, [currentUser, userRole, navigate]);
 
   const handleLogin = async (credentials) => {
     try {
       setError('');
       setLoading(true);
       await login(credentials.email, credentials.password);
-      if (!isVerified) {
-        setShowVerificationMessage(true);
-        navigate('/');
-      } else if (userRole === 'student') {
-        navigate('/student-dashboard');
-      } else if (userRole === 'faculty') {
-        navigate('/faculty-dashboard');
-      } else {
-        navigate('/');
-      }
+      // Redirection will be handled by the login function in AuthContext
     } catch (error) {
       setError('Failed to sign in: ' + error.message);
     } finally {
@@ -55,33 +48,18 @@ const Login = () => {
     try {
       setError('');
       setLoading(true);
-      
-      // Define a callback function to handle navigation after successful authentication
-      const handleGoogleAuthSuccess = () => {
-        // Determine where to navigate based on verification status
-        if (!isVerified) {
-          setShowVerificationMessage(true);
-          navigate('/');
-        } else if (userRole === 'student') {
-          navigate('/student-dashboard');
-        } else if (userRole === 'faculty') {
-          navigate('/faculty-dashboard');
-        } else {
-          navigate('/');
-        }
-      };
-      
-      // Pass the callback to loginWithGoogle
-      await loginWithGoogle(handleGoogleAuthSuccess);
+      await loginWithGoogle();
     } catch (error) {
       console.error('Google login error:', error);
       setError('Failed to sign in with Google: ' + error.message);
+    } finally {
       setLoading(false);
     }
   };
 
   const handleShowForgotPassword = () => {
     setShowForgotPassword(true);
+    setError('');
   };
 
   const handleBackToLogin = () => {
@@ -111,14 +89,6 @@ const Login = () => {
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
             <span className="block sm:inline">{error}</span>
-          </div>
-        )}
-        
-        {showVerificationMessage && (
-          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative" role="alert">
-            <span className="block sm:inline">
-              Please wait for administrator verification. You will be notified once your account is verified.
-            </span>
           </div>
         )}
         

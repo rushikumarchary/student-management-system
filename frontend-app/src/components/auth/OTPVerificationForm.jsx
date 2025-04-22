@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { FaArrowLeft, FaKey } from 'react-icons/fa';
+import { FaArrowLeft, FaKey, FaEnvelope } from 'react-icons/fa';
 
-const OTPVerificationForm = ({ onVerify, onBack }) => {
+const OTPVerificationForm = ({ onVerify, onBack, email }) => {
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -37,6 +37,13 @@ const OTPVerificationForm = ({ onVerify, onBack }) => {
       <h2 className="text-2xl font-bold text-primary-800 mb-6">
         Verify OTP
       </h2>
+      
+      {email && (
+        <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg relative mb-4 flex items-center">
+          <FaEnvelope className="mr-2" />
+          <span>OTP has been sent to <strong>{email}</strong></span>
+        </div>
+      )}
       
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">

@@ -1,10 +1,11 @@
-import React from 'react';
+import React from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
 } from "react-router-dom";
+import { Toaster } from 'react-hot-toast';
 import MainLayout from "./layouts/MainLayout";
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -20,98 +21,99 @@ import Results from "./pages/Results";
 import UnderDevelopment from "./components/common/UnderDevelopment";
 import Unauthorized from "./pages/Unauthorized";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import { AuthProvider } from './context/AuthContext';
-import Dashboard from './pages/Dashboard';
-import StudentDashboard from './pages/StudentDashboard';
-import FacultyDashboard from './pages/FacultyDashboard';
-
-// Create a separate component for routes that need auth context
-const AppRoutes = () => {
-  return (
-    <Routes>
-      <Route element={<MainLayout />}>
-        {/* Public Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/unauthorized" element={<Unauthorized />} />
-
-        {/* Protected Student Routes */}
-        <Route
-          path="/academics"
-          element={
-            <ProtectedRoute requiredRole="student">
-              <Academics />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/results"
-          element={
-            <ProtectedRoute requiredRole="student">
-              <Results />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Protected Faculty Routes */}
-        <Route
-          path="/faculty"
-          element={
-            <ProtectedRoute requiredRole="faculty">
-              <Faculty />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route path="/admissions" element={<Admissions />} />
-        <Route path="/facilities" element={<Facilities />} />
-        <Route path="/alumni" element={<Alumni />} />
-        <Route path="/events" element={<Events />} />
-
-        {/* Student Dashboard */}
-        <Route
-          path="/student-dashboard"
-          element={
-            <ProtectedRoute requiredRole="student">
-              <StudentDashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Faculty Dashboard */}
-        <Route
-          path="/faculty-dashboard"
-          element={
-            <ProtectedRoute requiredRole="faculty">
-              <FacultyDashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Generic Dashboard (for Google login) */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Catch-all route for pages under development or not found */}
-        <Route path="*" element={<UnderDevelopment />} />
-      </Route>
-    </Routes>
-  );
-};
+import { AuthProvider } from "./context/AuthContext";
+import  StudentDashboard from "./pages/StudentDashboard";
+import FacultyDashboard from "./pages/FacultyDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+import AuthCallback from './components/auth/AuthCallback';
 
 function App() {
   return (
     <Router>
       <AuthProvider>
-        <AppRoutes />
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+            success: {
+              duration: 3000,
+              theme: {
+                primary: '#4aed88',
+              },
+            },
+            error: {
+              duration: 4000,
+              theme: {
+                primary: '#ff4b4b',
+              },
+            },
+          }}
+        />
+        <Routes>
+          {/* Public Routes */}
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/admissions" element={<Admissions />} />
+            <Route path="/facilities" element={<Facilities />} />
+            <Route path="/alumni" element={<Alumni />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/unauthorized" element={<Unauthorized />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/faculty" element={<Faculty />} />
+            <Route path="/faculty" element={<Faculty />} />
+
+            {/* Protected Student Routes */}
+            <Route path="/academics" element={<Academics />} />
+            <Route
+              path="/results"
+              element={
+                <ProtectedRoute requiredRole="Student">
+                  <Results />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student-dashboard"
+              element={
+                <ProtectedRoute requiredRole="Student">
+                  <StudentDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Protected Faculty Routes */}
+
+            <Route
+              path="/faculty-dashboard"
+              element={
+                <ProtectedRoute requiredRole="Faculty">
+                  <FacultyDashboard />
+                </ProtectedRoute>
+              }
+            />
+            {/* Admin Dashboard */}
+            <Route
+              path="/admin-dashboard"
+              element={
+                <ProtectedRoute>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Auth Callback */}
+            <Route path="/auth/callback" element={<AuthCallback />} />
+
+            {/* Catch all route */}
+            <Route path="*" element={<UnderDevelopment />} />
+          </Route>
+        </Routes>
       </AuthProvider>
     </Router>
   );

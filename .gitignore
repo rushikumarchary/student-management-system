@@ -1,0 +1,83 @@
+# ===== Global Ignored Files =====
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Dependency directories
+node_modules/
+bower_components/
+
+keycloak-26.2.0/ 
+# Output directories
+dist/
+build/
+target/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Firebase config (sensitive)
+src/main/resources/firebase-adminsdk.json
+
+# ===== IntelliJ IDEA =====
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# ===== Eclipse / STS =====
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# ===== NetBeans =====
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ===== VS Code =====
+.vscode/
+
+# ===== Maven Wrapper =====
+.mvn/
+!**/mvn/wrapper/maven-wrapper.jar
+
+# ===== Gradle Wrapper =====
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+
+# ===== Java Specific =====
+*.class
+*.jar
+*.war
+*.ear
+
+# ===== React / Frontend =====
+frontend-app/.next/
+frontend-app/.env.local
+frontend-app/.env.production
+frontend-app/.env.development
+frontend-app/.turbo/
+
+# ===== IDEA & Build folders inside all modules =====
+**/.idea/
+**/target/
+**/build/
+
+# ===== Test & Coverage =====
+coverage/
+*.lcov
+reports/
+test-output/

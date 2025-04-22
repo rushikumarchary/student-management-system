@@ -1,7 +1,48 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FaUserPlus, FaFileAlt, FaClipboardList, FaCalendarAlt, FaMoneyBillWave, FaCheckCircle } from 'react-icons/fa';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const Admissions = () => {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    mobile: '',
+    dob: '',
+    course: ''
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post('http://localhost:8081/user/register-user', formData);
+      console.log('Registration successful:', response.data);
+      // Reset form after successful submission
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        mobile: '',
+        dob: '',
+        course: ''
+      });
+      toast.susses(`Application submitted successfully!`)
+     
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      alert('Failed to submit application. Please try again.');
+    }
+  };
+
   const admissionSteps = [
     {
       icon: FaFileAlt,
@@ -119,22 +160,30 @@ const Admissions = () => {
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-primary-800 mb-8 text-center">Application Form</h2>
           <div className="max-w-2xl mx-auto bg-gray-50 rounded-lg shadow-md p-6">
-            <form className="space-y-6">
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-primary-800 font-medium mb-2">First Name</label>
                   <input
                     type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="Enter first name"
+                    required
                   />
                 </div>
                 <div>
                   <label className="block text-primary-800 font-medium mb-2">Last Name</label>
                   <input
                     type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="Enter last name"
+                    required
                   />
                 </div>
               </div>
@@ -142,34 +191,51 @@ const Admissions = () => {
                 <label className="block text-primary-800 font-medium mb-2">Email</label>
                 <input
                   type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Enter email address"
+                  required
                 />
               </div>
               <div>
-                <label className="block text-primary-800 font-medium mb-2">Phone</label>
+                <label className="block text-primary-800 font-medium mb-2">Mobile Number</label>
                 <input
                   type="tel"
+                  name="mobile"
+                  value={formData.mobile}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="Enter phone number"
+                  placeholder="Enter mobile number"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-primary-800 font-medium mb-2">Date of Birth</label>
+                <input
+                  type="date"
+                  name="dob"
+                  value={formData.dob}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  required
                 />
               </div>
               <div>
                 <label className="block text-primary-800 font-medium mb-2">Course Applied For</label>
-                <select className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500">
-                  <option value="">Select a course</option>
-                  <option value="science">Science</option>
-                  <option value="commerce">Commerce</option>
-                  <option value="arts">Arts</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-primary-800 font-medium mb-2">Message</label>
-                <textarea
+                <select 
+                  name="course"
+                  value={formData.course}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  rows="4"
-                  placeholder="Any additional information"
-                ></textarea>
+                  required
+                >
+                  <option value="">Select a course</option>
+                  <option value="Science">Science</option>
+                  <option value="Commerce">Commerce</option>
+                  <option value="Arts">Arts</option>
+                </select>
               </div>
               <button
                 type="submit"

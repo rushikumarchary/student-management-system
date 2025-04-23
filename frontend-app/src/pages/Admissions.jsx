@@ -10,6 +10,7 @@ const Admissions = () => {
     email: '',
     mobile: '',
     dob: '',
+    branch: '',
     course: ''
   });
 
@@ -24,7 +25,7 @@ const Admissions = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8081/user/register-user', formData);
+      const response = await axios.post('http://localhost:8080/api/admissions/student/register', formData);
       console.log('Registration successful:', response.data);
       // Reset form after successful submission
       setFormData({
@@ -33,13 +34,13 @@ const Admissions = () => {
         email: '',
         mobile: '',
         dob: '',
+        branch: '',
         course: ''
       });
-      toast.susses(`Application submitted successfully!`)
-     
+      toast.success('Application submitted successfully!');
     } catch (error) {
       console.error('Error submitting application:', error);
-      alert('Failed to submit application. Please try again.');
+      toast.error(error.response?.data?.message || 'Failed to submit application. Please try again.');
     }
   };
 
@@ -223,8 +224,8 @@ const Admissions = () => {
                 />
               </div>
               <div>
-                <label className="block text-primary-800 font-medium mb-2">Course Applied For</label>
-                <select 
+                <label className="block text-primary-800 font-medium mb-2">Course</label>
+                <select
                   name="course"
                   value={formData.course}
                   onChange={handleChange}
@@ -232,11 +233,30 @@ const Admissions = () => {
                   required
                 >
                   <option value="">Select a course</option>
-                  <option value="Science">Science</option>
-                  <option value="Commerce">Commerce</option>
-                  <option value="Arts">Arts</option>
+                  <option value="BE">BE</option>
+                  <option value="BTech">BTech</option>
+                  <option value="ME">ME</option>
+                  <option value="MTech">MTech</option>
                 </select>
               </div>
+              <div>
+                <label className="block text-primary-800 font-medium mb-2">Branch</label>
+                <select
+                  name="branch"
+                  value={formData.branch}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  required
+                >
+                  <option value="">Select a branch</option>
+                  <option value="IT">IT</option>
+                  <option value="CSE">CSE</option>
+                  <option value="ECE">ECE</option>
+                  <option value="ME">ME</option>
+                  <option value="CE">CE</option>
+                </select>
+              </div>
+
               <button
                 type="submit"
                 className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200"

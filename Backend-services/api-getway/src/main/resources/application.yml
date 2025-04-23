@@ -1,0 +1,41 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9091/realms/collage_management
+      client:
+        registration:
+          keycloak:
+            provider: keycloak
+            client-id: api-gateway
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:9091/realms/collage_management
+
+  cloud:
+    gateway:
+      default-filters:
+        - TokenRelay
+      routes:
+        - id: admin-service
+          uri: http://localhost:8081/
+          predicates:
+            - Path=/api/admin/**
+
+        - id: admissions-service
+          uri: http://localhost:8082/
+          predicates:
+            - Path=/api/admissions/**
+
+        - id: student-service
+          uri: http://localhost:8083/
+          predicates:
+            - Path=/api/student/**
+
